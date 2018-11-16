@@ -34,6 +34,8 @@ Object Detection with YOLOv3 DONE.
 
 ### Supporting tests:
 
+FOR FRIDAY NIGHT
+
 Sliding Window: GOOD
 
 Selective Search: BAD
@@ -48,9 +50,15 @@ Train on mira
 
 test on disparity again.
 
+ON SATURDAY
+
+do on bow too, same dataset.
+
 ---------------
 
 ### Report:
+
+FRIDAY, SATURDAY, SUNDAY
 
 write report, write whatever he says
 
@@ -60,7 +68,7 @@ talk about your application neural network too
 
 compare HOG vs BOW vs NN vs YOLOv3
 
-acknowledge prev. datasets
+acknowledge prev. datasets, give ref to research papers.
 
 
 Record Video
