@@ -40,11 +40,11 @@ Sliding Window: GOOD
 
 Selective Search: BAD
 
-update dataset
+DONE - update dataset
 
-remove tests and put into train
+DONE - remove tests and put into train
 
-adapt the hog_train and params to multi purpose:
+DONE - adapt the hog_train and params to multi purpose:
 
 Train on mira
 
