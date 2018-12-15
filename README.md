@@ -1,87 +1,30 @@
 # OpenCVassignment
-just scared of losing it.
 
 
-### General ToDo
+In this assignment, we got to implement an Human Detection Algorithm for driverless cars. The aim of this assignment is finding different approaches to human detection and classification. 
 
-DONE - go with NN that,
+I have used Andy Yun's PyTorch implementation of YOLOv3 for object detection. I improved bounding boxes of detected objects when cv2 format images are processed. I integrated the Neural Network with the test dataset and managed classification. The success rate is more than 97%.
 
-DONE/Depr - use AOI: front(cars,pedestrians), right(cars), left(pedestrians). more classes if want more?
+I also implemented/experimented several approaches like HOG and sliding window. As sliding window was exhaustively trying to search all possible places in the image, I cropped the image to have region of interest and reduced the boxes of detection. I used Sobel Edge Detection with respect to y-axis to reduce the unnecessary data and used opening with 3x3 kernel to remove the noise. I also converted human training dataset (INRIA Person dataset) to Sobel-Opening to increase the accuracy. Each time the candidate box passes the HOG detection, I also get the matrix coefficient of the box with random image from INRIA dataset to have another false positive filtering.
 
-DONE/Depr - filter out
-    DONE - compare/deploy to DL with RGB. If fits, then sits.
-    'maybe use SVM?'
+Also from the given disparity-image of the driverless car data, I created depth matrix to get the approximate distance between car and object.
 
-DONE/Depr - Train pedestrians with DL. If your implementation catches area, check with DL and give the result.
-    Deprecated 'very bad results, may use SVM, add cars dataset to yours, retrain check, different sizes dataset.'
-    DONE WITH YOLOOO
-
-Semi-DONE - distance: use color map of disparity to calculate distance. If model says this, distance be taken, pipelined to boxing
-DONE BY YOLOOO - boxing: if yes, box the area. maybe HOG? maybe own heatmap?
-
-CURRENT OBSERVATIONS:
-
-dl is bad. use HOG instead, personas are seen as cars or literally anything else.
-
-NVM, YOLOOO solved it all!!!
-
-now set the class get all detections here. do optimization where needed. Insert numbers with the coords given.
-
-
-Object Detection with YOLOv3 DONE.
-
------------------
-
-### Supporting tests:
-
-FOR FRIDAY NIGHT
-
-Sliding Window: GOOD
-
-Selective Search: BAD
-
-DONE - update dataset
-
-DONE - remove tests and put into train
-
-DONE - adapt the hog_train and params to multi purpose:
-
-Train on mira
-
-test on disparity again.
-
-ON SATURDAY
-
-do on bow too, same dataset.
-
----------------
-
-### Report:
-
-FRIDAY, SATURDAY, SUNDAY
-
-write report, write whatever he says
-
-compare sliding window with selective search
-
-talk about your application neural network too
-
-compare HOG vs BOW vs NN vs YOLOv3
-
-acknowledge prev. datasets, give ref to research papers.
-
-
-Record Video
+Just download the program, change the dataset path in the python files. 
 
 
 
-
-resources
-
+Original paper for YoloV3
 https://pjreddie.com/media/files/papers/YOLOv3.pdf
 @article{yolov3,
   title={YOLOv3: An Incremental Improvement},
   author={Redmon, Joseph and Farhadi, Ali},
   journal = {arXiv},
   year={2018}
-    }
+ }
+
+
+YoloV3 was taken from this page:
+https://github.com/andy-yun/pytorch-0.4-yolov3
+
+Stereo-disparity.py was implemented from:
+https://github.com/CodLiver/OpenCVassignment/blob/master/HOG_Implementation/stereo_disparity.py
