@@ -13,33 +13,28 @@
 # License : LGPL - http://www.gnu.org/licenses/lgpl.html
 
 #####################################################################
-
-#!/usr/bin/python
-"""Cem"""
-from matplotlib import pyplot as plt
-import time,cv2,os,sys
-# print(sys.path)
-# from Classifier import Classifier
-# cl=Classifier("D:/ComputerVisionAssignment/results/","D:/ComputerVisionAssignment/newTrainedModel.pth")
-import numpy as np
-# from predictor.detect import *
-from predictor.detect import detectorClass
-
-
-# import predictor
-
-dc=detectorClass("predictor/cfg/yolo_v3.cfg","predictor/yolov3.weights")
-
-# where is the data ? - set this to where you have it
-
-master_path_to_dataset = "D:/ComputerVisionAssignment/TTBB-durham-02-10-17-sub10/"; # ** need to edit this **
+master_path_to_dataset = "TTBB-durham-02-10-17-sub10";
 directory_to_cycle_left = "left-images";     # edit this if needed
 directory_to_cycle_right = "right-images";   # edit this if needed
 
+
+
+#!/usr/bin/python
+"""Z0972219's part"""
+can_Machine_Support_Display_Image=True
+from matplotlib import pyplot as plt
+import time,cv2,os,sys
+import numpy as np
+from predictor.detect import detectorClass
+dc=detectorClass("predictor/cfg/yolo_v3.cfg","predictor/yolov3.weights")
+
+"taken from stereo_to_3d"
 camera_focal_length_px = 399.9745178222656  # focal length in pixels
 camera_focal_length_m = 4.8 / 1000          # focal length in metres (4.8 mm)
 stereo_camera_baseline_m = 0.2090607502     # camera baseline in metres
+"my derivation"
 fB=stereo_camera_baseline_m*camera_focal_length_px
+"""Z0972219's part end"""
 
 # set this to a file timestamp to start from (empty is first example - outside lab)
 # e.g. set to 1506943191.487683 for the end of the Bailey, just as the vehicle turns
@@ -78,11 +73,8 @@ left_file_list = sorted(os.listdir(full_path_directory_left));
 max_disparity = 128;
 stereoProcessor = cv2.StereoSGBM_create(0, max_disparity, 21);
 
+print("##please ignore the next error output, the rest is correct.##")
 
-BWValue=[]
-counter=0
-# plt.ion()
-# plt.show()
 for filename_left in left_file_list:
     # skip forward to start a file we specify by timestamp (if this is set)
 
@@ -99,9 +91,9 @@ for filename_left in left_file_list:
 
     # for sanity print out these filenames
 
-    print(full_path_filename_left);
-    print(full_path_filename_right);
-    print();
+    # print(full_path_filename_left);
+    # print(full_path_filename_right);
+    # print();
 
     # check the file is a PNG file (left) and check a correspondoning right image
     # actually exists
@@ -155,53 +147,44 @@ for filename_left in left_file_list:
 
         """
 
-        ####################################### CEM'S PART START ####################################################
-		ask this part to change:
+        ####################################### Z0972219'S PART START ####################################################
 
-		DONE - go with that,
-
-		DONE - use AOI: front(cars,pedestrians), right(cars), left(pedestrians). more classes if want more?
-
-		DONE - filter out
-        NOT YET - compare/deploy to DL with RGB. If fits, then sits.
-        'maybe use SVM?'
-
-		DONE - Train pedestrians with DL. If your implementation catches area, check with DL and give the result.
-        Deprecated 'very bad results, may use SVM, add cars dataset to yours, retrain check, different sizes dataset.'
-        DONE WITH YOLOOO
-
-        NOT STARTED - distance: use color map of disparity to calculate distance. If model says this, distance be taken, pipelined to boxing
-        DONE BY YOLOOO - boxing: if yes, box the area. maybe HOG? maybe own heatmap?
-
-        CURRENT OBSERVATIONS:
-        dl is bad. use HOG instead, personas are seen as cars or literally anything else.
-        NVM, YOLOOO solved it all!!!
-        now set the class get all detections here. do optimization where needed. Insert numbers with the coords given.
-
-        https://pjreddie.com/media/files/papers/YOLOv3.pdf
-        @article{yolov3,
-          title={YOLOv3: An Incremental Improvement},
-          author={Redmon, Joseph and Farhadi, Ali},
-          journal = {arXiv},
-          year={2018}
-        }
         """
 
-        "#THE DEPTH CALC MATRIX, BUT MIGHT BE WRONG, LET PEOPLE CHECK"
+        "Disparity to Depth"
         disparity=cv2.resize(disparity[:,124:],(1024,544))
         depthMx=fB/disparity
         depthMx[depthMx>255]=0.4
 
-        # cv2.imshow("processed1", depthMx)
-        #
-        # cv2.imshow("processed2", depthMx)
+        "YOLOv3 detecting our car as well, so I had to remove that part from the image before deploying that to model."
+        DETECTED=dc.detect_cv2(imgL[:430,:],depthMx)
 
+        nameM="No object detected"
+        distM="(X.Xm)"
+        if len(DETECTED[1])>1:
+            distM=3000
+            for each in DETECTED[1]:
+                if each[1]!="nan" and float(each[1])<float(distM):
+                    nameM=each[0]
+                    distM=each[1]
 
-        cv2.imshow("processed", dc.detect_cv2(imgL,depthMx)[0])#"res/"+str(counter)+".png"
+            distM="("+distM+"m)"
+        elif len(DETECTED[1])==1:
+            nameM=DETECTED[1][0][0]
+            distM=DETECTED[1][0][1]
 
-        """seperation done, start histogram them, observe change, use either HOG or DL"""
+            distM="("+distM+"m)"
 
-        """####################################### CEM'S PART END ####################################################"""
+        print(full_path_filename_left);
+        print(full_path_filename_right+": nearest detected scene object "+ nameM+" "+distM);
+        print();
+        if can_Machine_Support_Display_Image:
+            cv2.imshow("left image", np.concatenate((DETECTED[0], imgL[430:,:]), axis=0))
+            cv2.imshow("disparity image", depthMx)
+        else:
+            print(DETECTED[1])
+
+        """####################################### Z0972219'S PART END ####################################################"""
 
 
 

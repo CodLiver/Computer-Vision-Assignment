@@ -204,6 +204,7 @@ def get_region_boxes(output, netshape, conf_thresh, num_classes, anchors, num_an
     return all_boxes
 
 def plot_boxes_cv2(img, boxes, depthMx, class_names=None, color=None):#savename=save 3rd one.
+    "plots boxes"
     import cv2
     colors = torch.FloatTensor([[1,0,1],[0,0,1],[0,1,1],[0,1,0],[1,1,0],[1,0,0]])
     def get_color(c, x, max_val):
@@ -217,14 +218,13 @@ def plot_boxes_cv2(img, boxes, depthMx, class_names=None, color=None):#savename=
     width = img.shape[1]
     height = img.shape[0]
 
-    nameAndCoord=[]
+    nameAndDist=[]
     for i in range(len(boxes)):
         box = boxes[i]
-        # print("round",type((box[0] - box[2]/2.0) * width)) yields tensor and round has no func for that
-        x1 = int(torch.round_((box[0] - box[2]/2.0) * width))#-262#added
-        y1 = int(torch.round_((box[1] - box[3]/2.0) * height))#-474
-        x2 = int(torch.round_((box[0] + box[2]/2.0) * width))#-262
-        y2 = int(torch.round_((box[1] + box[3]/2.0) * height))#-474
+        x1 = int(torch.round_((box[0] - box[2]/2.0) * width))
+        y1 = int(torch.round_((box[1] - box[3]/2.0) * height))
+        x2 = int(torch.round_((box[0] + box[2]/2.0) * width))
+        y2 = int(torch.round_((box[1] + box[3]/2.0) * height))
 
         if color:
             rgb = color
@@ -233,7 +233,6 @@ def plot_boxes_cv2(img, boxes, depthMx, class_names=None, color=None):#savename=
         if len(box) >= 7 and class_names:
             cls_conf = box[5]
             cls_id = box[6]
-            #print('%s: %f' % (class_names[cls_id], cls_conf))
             classes = len(class_names)
             offset = cls_id * 123457 % classes
             red   = get_color(2, offset, classes)
@@ -242,37 +241,27 @@ def plot_boxes_cv2(img, boxes, depthMx, class_names=None, color=None):#savename=
             if color is None:
                 rgb = (red, green, blue)
 
-            ###### CV2 TO PIL
-            # try to get better boxes tbf.
-            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-            # cv2 are array, PIL is not array as seen.
-            img = Image.fromarray(img)
-
             distance='%.1f' % (depthMx[y1:y2,x1:x2].mean()*5)
-            # drawtext(img, (x1, y1), class_names[cls_id]+":"+str('%.3f' % cls_conf.item()), bgcolor=rgb, font=ImageFont.truetype("arialbd", 14))
-            try:
-                drawtext(img, (x1, y1), class_names[cls_id]+", "+str(distance)+"m", bgcolor=rgb, font=ImageFont.truetype("arialbd", 14))
-            except Exception as e:
-                pass
-
-            ###PIL TO CV2 back, if needed use the bad one.
-            img = np.array(img)
-            # Convert RGB to BGR
-            img = img[:, :, ::-1].copy()
-            ####### if you dont like the running between PIL to Cv2, conert to that it adds 0.008 sec tot hat.
-            # img = cv2.putText(img, class_names[cls_id], (x1,y1),cv2.FONT_HERSHEY_SIMPLEX , 1.2, rgb, 1)#cv2.FONT_HERSHEY_SIMPLEX
-            ## may need to add their distance too. or that can be done with the same procedure with extra another lines of code.
-
-            # nameAndCoord.append([class_names[cls_id],(x1+x2)//2,(y1+y2)//2])# maybe if I want to go ful precision. which is impossible. add nice code to github plz.
-            nameAndCoord.append([class_names[cls_id],distance]) #investigate, maybe later purposes. no needed rightnow
-
-        # may use this: drawrect(draw, [x1, y1, x2, y2], outline=rgb, width=2)???
+            "set True, if want better boxes but low running time. Set False if want worse boxes but good running time. May not change the running time at all, so was set true."
+            if True:
+                # CV2 TO PIL #
+                img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                # cv2 are array, PIL is not array as seen.
+                img = Image.fromarray(img)
+                try:
+                    drawtext(img, (x1, y1), class_names[cls_id]+", "+str(distance)+"m", bgcolor=rgb, font=ImageFont.truetype("arialbd", 14))
+                except Exception as e:
+                    pass
+                # PIL TO CV2 back
+                img = np.array(img)
+                # Convert RGB to BGR
+                img = img[:, :, ::-1].copy()
+            else:
+                img = cv2.putText(img, class_names[cls_id]+", "+str(distance)+"m", (x1,y1), cv2.FONT_HERSHEY_DUPLEX, 0.8, rgb, 2)
+            nameAndDist.append([class_names[cls_id],distance]) #investigate, maybe later purposes. no needed rightnow
         img = cv2.rectangle(img, (x1,y1), (x2,y2), rgb, 2)
-    # if savename:
-    #     print("save plot results to %s" % savename)
-    #     cv2.imwrite(savename, img)
-    "uncomment nameandcoord if you want to run in mira and get detections into command line"
-    return img,nameAndCoord#coordinates can be given, so distances can also be calculated.
+    "returns img and all detected images name and distance"
+    return img,nameAndDist#coordinates can be given, so distances can also be calculated.
 
 def drawrect(drawcontext, xy, outline=None, width=0):
     x1, y1, x2, y2 = xy
@@ -283,13 +272,13 @@ def drawtext(img, pos, text, bgcolor=(255,255,255), font=None):
     if font is None:
         font = ImageFont.load_default().font
     (tw, th) = font.getsize(text)
-    box_img = Image.new('RGBA', (tw+2, th+2), bgcolor)
+    box_img = Image.new('RGB', (tw+2, th+2), bgcolor)
     ImageDraw.Draw(box_img).text((0, 0), text, fill=(0,0,0,255), font=font)
+    if img.mode != 'RGB':
+        img = img.convert('RGB')
     img.paste(box_img, (pos[0], pos[1]-th-2))
 
 def plot_boxes(img, boxes, savename=None, class_names=None):
-
-    "gets clors"
     colors = torch.FloatTensor([[1,0,1],[0,0,1],[0,1,1],[0,1,0],[1,1,0],[1,0,0]])
     def get_color(c, x, max_val):
         ratio = float(x)/max_val * 5
@@ -489,8 +478,3 @@ def get_image_size(fname):
 
 def logging(message):
     print('%s %s' % (time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()), message))
-
-# def savelog(message):
-#     logging(message)
-#     with open('savelog.txt', 'a') as f:
-#         print('%s %s' % (time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()), message), file=f)

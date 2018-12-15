@@ -1,21 +1,52 @@
 import sys
-import time
+import time,os
 from PIL import Image, ImageDraw
 #from models.tiny_yolo import TinyYoloNet
 from predictor.utils import *
 from predictor.image import letterbox_image, correct_yolo_boxes
 from predictor.darknet import Darknet
 
-
+# os.environ["CUDA_VISIBLE_DEVICES"]="-1"
 
 class detectorClass():
-    """docstring for detectorClass."""
+    """
+    PyTorch Implementation of YOLOv3 Detector class:
+
+    detect.py modularization and some assignment related integrations done by me, but the owner of the whole "predictor" folder (incl. other files and subfiles) is:
+
+    /***************************************************************************************
+    *    Title: pytorch-0.4-yolov3
+    *    Author: Young-Sun (Andy) Yun (GitHub: andy-yun)
+    *    Date: June 1 2018
+    *    Code version: 0.9.1
+    *    Availability: https://github.com/andy-yun/pytorch-0.4-yolov3
+    *
+    ***************************************************************************************/
+
+    __Methods that are used__
+
+    __init__(cfgfile, weightfile):
+    initalize by entering the relative path of 'cfgfile' in cfg file and 'weightfile' under 'predictor' which are already done in StereoDetectionYOLOv3.py
+
+    detect_cv2(img, depthMatrix):
+    ->
+    INPUTS:
+    img: 'numpy array' or 'path to file'.
+    depthMatrix: disparity matrix where closer images are dark and distant images are brighter (each pixel is calculated as meter.)
+    <-
+    OUTPUTS:
+    img=boxed image with distances to objects.
+    nameAndCoord= array that contains the image's label and distance (if only commandline was used.)
+
+    this method was used in the assignment. Please do not use other methods, as they might break the algorithm.
+
+
+    """
     def __init__(self, cfgfile, weightfile):
         super(detectorClass, self).__init__()
         self.weightfile = weightfile
         self.cfgfile = cfgfile
         self.m = Darknet(self.cfgfile)
-        #self.m.print_network()
         self.m.load_weights(self.weightfile)
         print('Loading weights from %s... Done!' % (self.weightfile))
 
@@ -50,11 +81,9 @@ class detectorClass():
         class_names = load_class_names(self.namesfile)
         plot_boxes(img, boxes, save, class_names)
 
-        # task is to find the returners of plot_boxes()
-        # return boxes,class_names,etc
 
-    def detect_cv2(self, imgfile, depthMx):#save
-        "probably I will use this?"
+    def detect_cv2(self, imgfile, depthMx):
+        "detect_cv2, the method that is used for detection."
         import cv2
 
         if type(imgfile) is np.ndarray:
@@ -90,34 +119,3 @@ class detectorClass():
 
         class_names = load_class_names(self.namesfile)
         plot_boxes_cv2(img, boxes, savename=save, class_names=class_names)
-
-
-###modularize this part, remove unnecessary parts. output the rectangle areas for the DL deep learning.
-##possible I/O structure.
-# predefined weight class definition.
-# I= either whole or partial image. lets go with whole
-# deploy this to detect(), wfile will be pre alloced by class.
-# return array [[label,h,w]]
-# disparity will get it and compare with its own stuff. get the result.
-if __name__ == '__main__':
-    dc=detectorClass("cfg/yolo_v3.cfg", "yolov3.weights")
-    print("started")
-    dc.detect_cv2("data/1506942477.481815_L.png",'data/test1.jpg')
-    print("end")
-
-
-
-
-
-    # if len(sys.argv) == 5:
-    #     cfgfile = sys.argv[1]
-    #     weightfile = sys.argv[2]
-    #     imgfile = sys.argv[3]
-    #     globals()["namesfile"] = sys.argv[4]
-    #     detect(cfgfile, weightfile, imgfile)
-    #     #detect_cv2(cfgfile, weightfile, imgfile)
-    #     #detect_skimage(cfgfile, weightfile, imgfile)
-    # else:
-    #     print('Usage: ')
-    #     print('  python detect.py cfgfile weightfile imgfile names')
-    #     #detect('cfg/tiny-yolo-voc.cfg', 'tiny-yolo-voc.weights', 'data/person.jpg', version=1)
