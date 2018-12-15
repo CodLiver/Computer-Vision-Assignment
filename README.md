@@ -27,4 +27,4 @@ YoloV3 was taken from this page:
 https://github.com/andy-yun/pytorch-0.4-yolov3
 
 Stereo-disparity.py was implemented from:
-https://github.com/CodLiver/OpenCVassignment/blob/master/HOG_Implementation/stereo_disparity.py
+https://github.com/tobybreckon/python-bow-hog-object-detection
